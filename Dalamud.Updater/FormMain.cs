@@ -694,12 +694,9 @@ namespace Dalamud.Updater
             //return false;
             var dalamudStartInfo = GeneratingDalamudStartInfo(process, Directory.GetParent(dalamudUpdater.Runner.FullName).FullName, injectDelay);
             var environment = new Dictionary<string, string>();
-            // No use cuz we're injecting instead of launching, the Dalamud.Boot.dll is reading environment variables from ffxiv_dx11.exe
-            /*
             var prevDalamudRuntime = Environment.GetEnvironmentVariable("DALAMUD_RUNTIME");
             if (string.IsNullOrWhiteSpace(prevDalamudRuntime))
                 environment.Add("DALAMUD_RUNTIME", runtimeDirectory.FullName);
-            */
             WindowsDalamudRunner.Inject(dalamudUpdater.Runner, process.Id, environment, DalamudLoadMethod.DllInject, dalamudStartInfo);
             return true;
         }
