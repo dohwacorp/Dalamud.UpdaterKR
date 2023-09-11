@@ -584,7 +584,7 @@ namespace Dalamud.Updater
                 var process = Process.GetProcessById(pid);
                 if (isInjected(process))
                 {
-                    var choice = MessageBox.Show("달라가브가 구버전입니다. 클라이언트를 종료합니다.", "Shutdown",
+                    var choice = MessageBox.Show("이미 달라가브가 적용되어있습니다.\n업데이트 확인을 위해서 게임을 종료하시겠습니까?", "Shutdown",
                                     MessageBoxButtons.YesNo,
                                     MessageBoxIcon.Information);
                     if (choice == DialogResult.Yes)
@@ -714,21 +714,14 @@ namespace Dalamud.Updater
                     {
                         Log.Information("[DINJECT] Inject finished.");
                     }
+
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("클라이언트 검색 실패", "Error) FFXIV Not Found 1",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("클라이언트 선택 실패", "Error) FFXIV Not Found 2",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
             }
 
+            MessageBox.Show("실행중인 게임을 찾을 수 없습니다.", "달라가브 적용 실패",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
         }
         private void SetAutoRun()
         {
