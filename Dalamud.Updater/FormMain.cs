@@ -358,15 +358,10 @@ namespace Dalamud.Updater
                 {
                     try
                     {
-                        // Fix not catching KR Client's PID
-                        //var newPidList = Process.GetProcessesByName("ffxiv_dx11").Where(process =>
-                        //{
-                        //    return !process.MainWindowTitle.Contains("FINAL FANTASY XIV");
-                        //}).ToList().ConvertAll(process => process.Id.ToString()).ToArray();
                         var newPidList = Process.GetProcessesByName("ffxiv_dx11").Select(x => x.Id.ToString()).ToArray();
-                        var newHash = String.Join(", ", newPidList).GetHashCode();
+                        var newHash = string.Join(", ", newPidList).GetHashCode();
                         var oldPidList = this.comboBoxFFXIV.Items.Cast<Object>().Select(item => item.ToString()).ToArray();
-                        var oldHash = String.Join(", ", oldPidList).GetHashCode();
+                        var oldHash = string.Join(", ", oldPidList).GetHashCode();
                         if (oldHash != newHash && this.comboBoxFFXIV.IsHandleCreated)
                         {
                             this.comboBoxFFXIV.Invoke((MethodInvoker)delegate
@@ -374,24 +369,30 @@ namespace Dalamud.Updater
                                 // Running on the UI thread
                                 comboBoxFFXIV.Items.Clear();
                                 comboBoxFFXIV.Items.AddRange(newPidList.Cast<object>().ToArray());
-                                if (newPidList.Length > 0)
+                                if (!comboBoxFFXIV.DroppedDown)
                                 {
-                                    if (!comboBoxFFXIV.DroppedDown)
-                                        this.comboBoxFFXIV.SelectedIndex = 0;
-                                    if (this.checkBoxAutoInject.Checked)
+                                    this.comboBoxFFXIV.SelectedIndex = 0;
+                                }
+                            });
+
+                            if (newPidList.Length > 0)
+                            {
+                                if (this.checkBoxAutoInject.Checked)
+                                {
+                                    while (dalamudUpdater.State != DalamudUpdater.DownloadState.Done)
                                     {
-                                        foreach (var pidStr in newPidList)
+                                        Thread.Sleep(1000);
+                                    }
+                                    foreach (var pidStr in newPidList)
+                                    {
+                                        var pid = int.Parse(pidStr);
+                                        if (this.Inject(pid, (int)this.injectDelaySeconds * 1000))
                                         {
-                                            //Thread.Sleep((int)(this.injectDelaySeconds * 1000));
-                                            var pid = int.Parse(pidStr);
-                                            if (this.Inject(pid, (int)this.injectDelaySeconds * 1000))
-                                            {
-                                                this.DalamudUpdaterIcon.ShowBalloonTip(2000, "자동 적용", $"Process ID : {pid}, 적용 완료.", ToolTipIcon.Info);
-                                            }
+                                            this.DalamudUpdaterIcon.ShowBalloonTip(2000, "자동 적용", $"Process ID : {pid}, 적용 완료.", ToolTipIcon.Info);
                                         }
                                     }
                                 }
-                            });
+                            }
                         }
                     }
                     catch
@@ -583,7 +584,7 @@ namespace Dalamud.Updater
                 var process = Process.GetProcessById(pid);
                 if (isInjected(process))
                 {
-                    var choice = MessageBox.Show("달라가브가 구버전입니다. 클라이언트를 종료합니다.", "Shutdown",
+                    var choice = MessageBox.Show("이미 달라가브가 적용되어있습니다.\n업데이트 확인을 위해서 게임을 종료하시겠습니까?", "Shutdown",
                                     MessageBoxButtons.YesNo,
                                     MessageBoxIcon.Information);
                     if (choice == DialogResult.Yes)
@@ -713,21 +714,14 @@ namespace Dalamud.Updater
                     {
                         Log.Information("[DINJECT] Inject finished.");
                     }
+
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("클라이언트 검색 실패", "Error) FFXIV Not Found 1",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("클라이언트 선택 실패", "Error) FFXIV Not Found 2",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
             }
 
+            MessageBox.Show("실행중인 게임을 찾을 수 없습니다.", "달라가브 적용 실패",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
         }
         private void SetAutoRun()
         {
